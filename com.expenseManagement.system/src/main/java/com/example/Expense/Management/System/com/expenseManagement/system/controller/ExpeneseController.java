@@ -1,6 +1,8 @@
 package com.example.Expense.Management.System.com.expenseManagement.system.controller;
 
 
+import com.example.Expense.Management.System.com.expenseManagement.system.customException.BusinessException;
+import com.example.Expense.Management.System.com.expenseManagement.system.customException.ControllerException;
 import com.example.Expense.Management.System.com.expenseManagement.system.entity.Expense;
 import com.example.Expense.Management.System.com.expenseManagement.system.service.ExpenseService;
 import com.example.Expense.Management.System.com.expenseManagement.system.service.ExpenseServiceImpl;
@@ -17,37 +19,62 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ExpeneseController {
 
-  @Autowired
-   private ExpenseServiceImpl expenseServiceImpl;
+    @Autowired
+    private ExpenseServiceImpl expenseServiceImpl;
 
-   @PostMapping("/submit")
-   public ResponseEntity<Expense> submitExpense(@RequestBody Expense expense){
-      Expense savedExpenseDto=expenseServiceImpl.submitExpense(expense);
-      return new ResponseEntity<>(savedExpenseDto, HttpStatus.ACCEPTED);
-   }
+    @PostMapping("/submit")
+    public ResponseEntity<?> submitExpense(@RequestBody Expense expense) {
+        Expense savedExpenseDto=null;
+        try {
+            savedExpenseDto = expenseServiceImpl.submitExpense(expense);
+            return new ResponseEntity<Expense>(savedExpenseDto, HttpStatus.ACCEPTED);
+        }catch (BusinessException e) {
+            ControllerException ce = new ControllerException(e.getErrorCode(), e.getErrorName());
+            return new ResponseEntity<ControllerException>(ce, HttpStatus.BAD_REQUEST);
+        }catch (Exception e){
+            ControllerException ce = new ControllerException("911","Something went wrong in controller");
+            return new ResponseEntity<ControllerException>(ce,HttpStatus.BAD_REQUEST);
+        }
+        }
 
-   @GetMapping("/all")
-    public ResponseEntity<List<Expense>> fetchAllExpense(){
-       List<Expense> listOfallExpense=expenseServiceImpl.fetchAllExpense();
-       return new ResponseEntity<>(listOfallExpense, HttpStatus.OK);
-   }
 
-   @GetMapping("/exp/{expid}")
-    public ResponseEntity<Expense> getExpensesbyId(@PathVariable("expid") Long id){
-       Expense fetchExpensebyId=expenseServiceImpl.getExpensesbyId(id);
-       return new ResponseEntity<>(fetchExpensebyId, HttpStatus.OK);
-   }
+    @GetMapping("/all")
+    public ResponseEntity<List<Expense>> fetchAllExpense() {
+        List<Expense> listOfallExpense = expenseServiceImpl.fetchAllExpense();
+        return new ResponseEntity<>(listOfallExpense, HttpStatus.OK);
+    }
 
-   @DeleteMapping("/exp/{expid}")
-    public ResponseEntity<Void> deleteExpenseById(@PathVariable("expid") Long id){
-       expenseServiceImpl.deleteExpenseById(id);
-       return new ResponseEntity<>(HttpStatus.ACCEPTED);
-   }
+    @GetMapping("/exp/{expid}")
+    public ResponseEntity<?> getExpensesbyId(@PathVariable("expid") Long id) {
+        try{
+        Expense fetchExpensebyId = expenseServiceImpl.getExpensesbyId(id);
+        return new ResponseEntity<Expense>(fetchExpensebyId, HttpStatus.OK);
+    }catch (BusinessException e) {
+        ControllerException ce = new ControllerException(e.getErrorCode(), e.getErrorName());
+        return new ResponseEntity<ControllerException>(ce, HttpStatus.BAD_REQUEST);
+    }catch (Exception e){
+        ControllerException ce = new ControllerException("911","Something went wrong in controller");
+        return new ResponseEntity<ControllerException>(ce,HttpStatus.BAD_REQUEST);
+    }
+    }
+
+    @DeleteMapping("/exp/{expid}")
+    public ResponseEntity<Void> deleteExpenseById(@PathVariable("expid") Long id) {
+        expenseServiceImpl.deleteExpenseById(id);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
 
     @PutMapping("/update")
-    public ResponseEntity<Expense> updateExpense(@RequestBody Expense expense){
-        Expense savedExpenseDto=expenseServiceImpl.submitExpense(expense);
+    public ResponseEntity<Expense> updateExpense(@RequestBody Expense expense) {
+        Expense savedExpenseDto = expenseServiceImpl.submitExpense(expense);
         return new ResponseEntity<>(savedExpenseDto, HttpStatus.CREATED);
     }
 
+    @PutMapping("/updateAll")
+    public ResponseEntity<Void> updateAllExpenses(@RequestBody List<Expense> expenses) {
+        expenseServiceImpl.updateAllExpenses(expenses);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
+
+

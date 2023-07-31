@@ -3,6 +3,7 @@ package com.example.Expense.Management.System.com.expenseManagement.system.contr
 
 import com.example.Expense.Management.System.com.expenseManagement.system.customException.BusinessException;
 import com.example.Expense.Management.System.com.expenseManagement.system.customException.ControllerException;
+import com.example.Expense.Management.System.com.expenseManagement.system.customException.EmptyInputException;
 import com.example.Expense.Management.System.com.expenseManagement.system.entity.Expense;
 import com.example.Expense.Management.System.com.expenseManagement.system.service.ExpenseService;
 import com.example.Expense.Management.System.com.expenseManagement.system.service.ExpenseServiceImpl;
@@ -23,19 +24,11 @@ public class ExpeneseController {
     private ExpenseServiceImpl expenseServiceImpl;
 
     @PostMapping("/submit")
-    public ResponseEntity<?> submitExpense(@RequestBody Expense expense) {
-        Expense savedExpenseDto=null;
-        try {
+    public ResponseEntity<?> submitExpense(@RequestBody Expense expense) throws Exception {
+            Expense savedExpenseDto=null;
             savedExpenseDto = expenseServiceImpl.submitExpense(expense);
-            return new ResponseEntity<Expense>(savedExpenseDto, HttpStatus.ACCEPTED);
-        }catch (BusinessException e) {
-            ControllerException ce = new ControllerException(e.getErrorCode(), e.getErrorName());
-            return new ResponseEntity<ControllerException>(ce, HttpStatus.BAD_REQUEST);
-        }catch (Exception e){
-            ControllerException ce = new ControllerException("911","Something went wrong in controller");
-            return new ResponseEntity<ControllerException>(ce,HttpStatus.BAD_REQUEST);
-        }
-        }
+        return new ResponseEntity<Expense>(savedExpenseDto, HttpStatus.ACCEPTED);
+    }
 
 
     @GetMapping("/all")
@@ -46,16 +39,8 @@ public class ExpeneseController {
 
     @GetMapping("/exp/{expid}")
     public ResponseEntity<?> getExpensesbyId(@PathVariable("expid") Long id) {
-        try{
         Expense fetchExpensebyId = expenseServiceImpl.getExpensesbyId(id);
         return new ResponseEntity<Expense>(fetchExpensebyId, HttpStatus.OK);
-    }catch (BusinessException e) {
-        ControllerException ce = new ControllerException(e.getErrorCode(), e.getErrorName());
-        return new ResponseEntity<ControllerException>(ce, HttpStatus.BAD_REQUEST);
-    }catch (Exception e){
-        ControllerException ce = new ControllerException("911","Something went wrong in controller");
-        return new ResponseEntity<ControllerException>(ce,HttpStatus.BAD_REQUEST);
-    }
     }
 
     @DeleteMapping("/exp/{expid}")
